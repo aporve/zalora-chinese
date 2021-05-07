@@ -75,33 +75,39 @@
                     <form class="show" action="#" id="form">
                         <div class="col-lg-12 m-0 pt-1" id="emotican">
                             <ul class="my-5 p-0" style="width: 100%; display: inline-block; list-style: none; margin: 50px 0 0 0;" >
-                                <table>
+                                <table class="m-0" style="width: 100%; border-collapse: inherit;">
                                     <tr>
-                                        <th>
-                                            <p class="mx-3" style="font-size: 5rem; cursor: pointer;" onclick="good()">😄</p>
+                                        <th style="width: 50%;">
+                                            <p style="font-size: 5rem; cursor: pointer;" class="d-flex justify-content-center" onclick="good()">😄</p>
                                         </th>
-                                        <th>
-                                            <p class="mx-3" style="font-size: 5rem; cursor: pointer;" onclick="bad()">😔</p>
+                                        <th style="width: 50%;">
+                                            <p style="font-size: 5rem; cursor: pointer;" class="d-flex justify-content-center" onclick="bad()">😔</p>
                                         </th>
                                     </tr>
-                                    <tr>
-                                        <td class="d-flex justify-content-center">
-                                            滿意
+                                    <tr style="width: 100%;">
+                                        <td style="width: 50%;">
+                                           <p class="d-flex justify-content-center">滿意</p>
                                         </td>
-                                        <td>
-                                        &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp;不滿意
+                                        <td style="width: 50%;">
+                                            <p class="d-flex justify-content-center">不滿意</p>
                                         </td>
                                     </tr>
                                 </table>
                             </ul>
                         </div> 
-                       <div class="hide" id="textArea">
-                        <div class="col-lg-12 d-flex justify-content-center" style="display: none;" >
-                            <textarea id="feedback" placeholder="  提交反饋.." class="w-75" name="text" cols="30" rows="4" style="resize: none; border: 2px solid #eee;"></textarea>
+                      <div id="error" class="hide">
+                        <div class="d-flex  justify-content-center" style="margin-top: 50px;">
+                            <span><p></p></span>
                         </div>
+                      </div>
+                        
+                       <div class="hide" id="textArea">
+                            <div class="col-lg-12 d-flex justify-content-center" style="display: none;" >
+                                <textarea id="feedback" placeholder=" 提交反饋.." class="w-75" name="text" cols="30" rows="4" style="resize: none; border: 2px solid #eee;"></textarea>
+                            </div>
                        </div>
 
-                        <div class="hide" id="dropdown">
+                        <div class="hide" id="dropdown" style="font-size: 14px;">
                             
                             <p>請選擇原因:</p>
                             <input type="radio" id="F1" name="reason" onclick="triggerText('F1')" value="The agent need to be more helpful">
@@ -117,6 +123,8 @@
                             <input type="radio" id="F6" name="reason" onclick="triggerText('F6')" value="Other Feedback">
                             <label for="Other Feedback">其他反饋</label><br>
                         </div>
+
+                        <div></div>
 
                         <div id="submitBtn" style="display: none;">
                             <div  class="col-lg-12 d-flex justify-content-center my-2" >
@@ -141,7 +149,7 @@
         let radioFeedback;
         let textareaValue ;
 
-
+        var reason = document.getElementsByName("reason");
         function good() {
             feedback = 'good';
             $('#emotican').hide();
@@ -167,6 +175,7 @@
             console.error('radioFeedback --->',radioFeedback);
         
             if(value == 'F6') {
+                $("#error").hide();
                 $("#dropdown").hide();
                 $("#textArea").show();
                 $("#textArea").css('margin-top', '50px')
@@ -179,34 +188,126 @@
 
         function details() {
             submitDetails = document.getElementById('feedback').value;
-            data.feedback = feedback;
-            data.radioButtonValue = radioFeedback
-            data.submitDetails = submitDetails;
             textareaValue = document.getElementById('feedback').value;
-
-            var feedbackDetails = {}
-            var raw = JSON.stringify({
-                "details": {
-                "companyName": "ZALORA",
-                "feedbackEmoji": feedback,
-                "radioValue": radioFeedback,
-                "textareaValue" : textareaValue
-                }
-            });
-
-            document.getElementById('feedback').value = ''
-            $("#form").trigger("reset");
             
-            feedbackDetails.data = raw;
-            window.parent.postMessage(JSON.stringify({
-                event_code: 'ym-client-event', data: JSON.stringify({
-                    event: {
-                    code: "feedback",
-                    data: feedbackDetails,
-                
+            if((feedback =='good') && (textareaValue !== '')) {
+                $("#error").hide();
+                $("#textArea").css('margin-top', '50px')
+                data.feedback = feedback;
+                data.radioButtonValue = radioFeedback
+                data.submitDetails = submitDetails;
+           
+                console.log('Submit Details---->>', );
+                var feedbackDetails = {}
+                var raw = JSON.stringify({
+                    "details": {
+                    "companyName": "ZALORA",
+                    "feedbackEmoji": feedback,
+                    "radioValue": radioFeedback,
+                    "textareaValue" : textareaValue
                     }
-                })
-            }), '*');
+                });
+
+                document.getElementById('feedback').value = ''
+                $("#form").trigger("reset");
+                
+                feedbackDetails.data = raw;
+                window.parent.postMessage(JSON.stringify({
+                    event_code: 'ym-client-event', data: JSON.stringify({
+                        event: {
+                        code: "feedback",
+                        data: feedbackDetails,
+                    
+                        }
+                    })
+                }), '*');
+
+            }
+            else if((feedback =='bad') && (radioFeedback !== 'Other Feedback') && ((reason[0].checked == true) || (reason[1].checked == true) || (reason[2].checked == true) || (reason[3].checked == true)|| (reason[4].checked == true))) {
+                $("#error").hide();
+                $("#textArea").css('margin-top', '50px')
+                data.feedback = feedback;
+                data.radioButtonValue = radioFeedback
+                data.submitDetails = submitDetails;
+            
+                console.log('Submit Details---->>',data);
+                var feedbackDetails = {}
+                var raw = JSON.stringify({
+                    "details": {
+                    "companyName": "ZALORA",
+                    "feedbackEmoji": feedback,
+                    "radioValue": radioFeedback,
+                    "textareaValue" : textareaValue
+                    }
+                });
+
+                document.getElementById('feedback').value = ''
+                $("#form").trigger("reset");
+                
+                feedbackDetails.data = raw;
+                window.parent.postMessage(JSON.stringify({
+                    event_code: 'ym-client-event', data: JSON.stringify({
+                        event: {
+                        code: "feedback",
+                        data: feedbackDetails,
+                    
+                        }
+                    })
+                }), '*');
+
+            }else if((feedback =='bad') && (radioFeedback == 'Other Feedback') && (textareaValue !== '')) {
+                $("#error").hide();
+                $("#textArea").css('margin-top', '50px')
+                data.feedback = feedback;
+                data.radioButtonValue = radioFeedback
+                data.submitDetails = submitDetails;
+            
+                console.log('Submit Details---->>',data);
+                var feedbackDetails =  {}
+                var raw = JSON.stringify({
+                    "details": {
+                    "companyName": "ZALORA",
+                    "feedbackEmoji": feedback,
+                    "radioValue": radioFeedback,
+                    "textareaValue" : textareaValue
+                    }
+                });
+
+                document.getElementById('feedback').value = ''
+                $("#form").trigger("reset");
+                
+                feedbackDetails.data = raw;
+                window.parent.postMessage(JSON.stringify({
+                    event_code: 'ym-client-event', data: JSON.stringify({
+                        event: {
+                        code: "feedback",
+                        data: feedbackDetails,
+                    
+                        }
+                    })
+                }), '*');
+
+            }else if((feedback =='bad') && (radioFeedback !== 'Other Feedback') && ((reason[0].checked == false) || (reason[1].checked == false) || (reason[2].checked == false) || (reason[3].checked == false)|| (reason[4].checked == false)|| (reason[5].checked == false))) {
+                $("#error").show();
+                $("#error").css('margin-top', '10px')
+                $("#error").css('margin-left', '35px')
+                $("#error").css('font-size', '14px')
+                $("#error").css('margin-bottom', '5px')
+                $("#error").css('color', 'red')
+                $("#error").text('Mohon berikan umpan balik...')
+                
+            }else {
+                $("#error").show();
+                $("#error").css('margin-top', '50px')
+                $("#error").css('font-size', '14px')
+                $("#error").css('margin-left', '35px')
+                $("#error").css('margin-bottom', '5px')
+                $("#error").css('color', 'red')
+                $("#textArea").css('margin-top', '0px')                
+                $("#error").text('Mohon berikan umpan balik...')
+            }
+
+
 
         }
 
